@@ -8,9 +8,13 @@
 #ifndef MCP4922_H
 #define	MCP4922_H
 
+#define MCP4922_CH_A    0
+#define MCP4922_CH_B    1
+
 #include <stdint.h>
 
 void mcp4922_init(void);
+void mcp4922_write(uint8_t ch, uint16_t code);
 
 #ifdef	__cplusplus
 extern "C" {

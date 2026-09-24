@@ -11,6 +11,7 @@
 #include <stdint.h>
 
 void spi2_init(void);
+uint8_t spi2_xfer(uint8_t tx);
 
 #ifdef	__cplusplus
 extern "C" {

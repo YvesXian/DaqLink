@@ -20,3 +20,11 @@ void spi2_init(void)
                                     /* MODE16 = MODE32 = 0 → 8-bit,SPI2CON = 0 時已清掉 */
     SPI2CONbits.ON = 1;
 }
+
+uint8_t spi2_xfer(uint8_t tx)
+{
+    SPI2BUF = tx;
+    /* wait the reciever completed */
+    while(!SPI2STATbits.SPIRBF);
+    return (uint8_t)SPI2BUF;
+}
