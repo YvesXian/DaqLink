@@ -11,6 +11,7 @@
 #include <stdint.h>
 
 void mcp3304_init(void);
+uint16_t mcp3304_read(uint8_t ch);
 
 #ifdef	__cplusplus
 extern "C" {

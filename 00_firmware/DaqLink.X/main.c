@@ -79,8 +79,13 @@ int main(void)
         {
             last += 1000 * CT_TICKS_PER_MS;
             LD1 = !LD1;
-            uart1_puts("hello ");
+            uart1_puts("hello mcp3304 ");
+            uart1_puts("count: ");
             uart1_put_uint(count++);
+            uart1_puts("  CH2=");
+            uart1_put_uint(mcp3304_read(2));
+            uart1_puts("  CH3=");
+            uart1_put_uint(mcp3304_read(3));
             uart1_puts("\r\n");
         }
 
