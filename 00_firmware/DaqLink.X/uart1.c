@@ -54,3 +54,8 @@ void uart1_put_uint(uint32_t v)
         uart1_putc(buf[--i]);
     }
 }
+
+int uart1_tx_ready(void)
+{
+    return !U1STAbits.UTXBF;
+}

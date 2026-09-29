@@ -19,6 +19,7 @@ extern "C" {
     void uart1_puts(const char *s);
     void uart1_put_uint(uint32_t v);
     int uart1_getc(void);
+    int uart1_tx_ready(void);
     
 #ifdef	__cplusplus
 }

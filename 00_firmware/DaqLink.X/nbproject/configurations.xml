@@ -9,6 +9,8 @@
       <itemPath>mcp3304.h</itemPath>
       <itemPath>uart1.h</itemPath>
       <itemPath>crc16.h</itemPath>
+      <itemPath>txbuf.h</itemPath>
+      <itemPath>packet.h</itemPath>
     </logicalFolder>
     <logicalFolder name="LinkerScript"
                    displayName="Linker Files"
@@ -23,6 +25,8 @@
       <itemPath>spi2.c</itemPath>
       <itemPath>uart1.c</itemPath>
       <itemPath>crc16.c</itemPath>
+      <itemPath>txbuf.c</itemPath>
+      <itemPath>packet.c</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"

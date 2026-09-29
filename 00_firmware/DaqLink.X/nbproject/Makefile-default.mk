@@ -57,17 +57,17 @@ OBJECTDIR=build/${CND_CONF}/${IMAGE_TYPE}
 DISTDIR=dist/${CND_CONF}/${IMAGE_TYPE}
 
 # Source Files Quoted if spaced
-SOURCEFILES_QUOTED_IF_SPACED=mcp3304.c mcp4922.c main.c spi2.c uart1.c crc16.c
+SOURCEFILES_QUOTED_IF_SPACED=mcp3304.c mcp4922.c main.c spi2.c uart1.c crc16.c txbuf.c packet.c
 
 # Object Files Quoted if spaced
-OBJECTFILES_QUOTED_IF_SPACED=${OBJECTDIR}/mcp3304.o ${OBJECTDIR}/mcp4922.o ${OBJECTDIR}/main.o ${OBJECTDIR}/spi2.o ${OBJECTDIR}/uart1.o ${OBJECTDIR}/crc16.o
-POSSIBLE_DEPFILES=${OBJECTDIR}/mcp3304.o.d ${OBJECTDIR}/mcp4922.o.d ${OBJECTDIR}/main.o.d ${OBJECTDIR}/spi2.o.d ${OBJECTDIR}/uart1.o.d ${OBJECTDIR}/crc16.o.d
+OBJECTFILES_QUOTED_IF_SPACED=${OBJECTDIR}/mcp3304.o ${OBJECTDIR}/mcp4922.o ${OBJECTDIR}/main.o ${OBJECTDIR}/spi2.o ${OBJECTDIR}/uart1.o ${OBJECTDIR}/crc16.o ${OBJECTDIR}/txbuf.o ${OBJECTDIR}/packet.o
+POSSIBLE_DEPFILES=${OBJECTDIR}/mcp3304.o.d ${OBJECTDIR}/mcp4922.o.d ${OBJECTDIR}/main.o.d ${OBJECTDIR}/spi2.o.d ${OBJECTDIR}/uart1.o.d ${OBJECTDIR}/crc16.o.d ${OBJECTDIR}/txbuf.o.d ${OBJECTDIR}/packet.o.d
 
 # Object Files
-OBJECTFILES=${OBJECTDIR}/mcp3304.o ${OBJECTDIR}/mcp4922.o ${OBJECTDIR}/main.o ${OBJECTDIR}/spi2.o ${OBJECTDIR}/uart1.o ${OBJECTDIR}/crc16.o
+OBJECTFILES=${OBJECTDIR}/mcp3304.o ${OBJECTDIR}/mcp4922.o ${OBJECTDIR}/main.o ${OBJECTDIR}/spi2.o ${OBJECTDIR}/uart1.o ${OBJECTDIR}/crc16.o ${OBJECTDIR}/txbuf.o ${OBJECTDIR}/packet.o
 
 # Source Files
-SOURCEFILES=mcp3304.c mcp4922.c main.c spi2.c uart1.c crc16.c
+SOURCEFILES=mcp3304.c mcp4922.c main.c spi2.c uart1.c crc16.c txbuf.c packet.c
 
 
 
@@ -143,6 +143,18 @@ ${OBJECTDIR}/crc16.o: crc16.c  nbproject/Makefile-${CND_CONF}.mk
 	@${RM} ${OBJECTDIR}/crc16.o 
 	@${FIXDEPS} "${OBJECTDIR}/crc16.o.d" $(SILENT) -rsi ${MP_CC_DIR}../ -c ${MP_CC} $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_SIMULATOR=1  -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -MMD -MF "${OBJECTDIR}/crc16.o.d" -o ${OBJECTDIR}/crc16.o crc16.c  
 	
+${OBJECTDIR}/txbuf.o: txbuf.c  nbproject/Makefile-${CND_CONF}.mk
+	@${MKDIR} "${OBJECTDIR}" 
+	@${RM} ${OBJECTDIR}/txbuf.o.d 
+	@${RM} ${OBJECTDIR}/txbuf.o 
+	@${FIXDEPS} "${OBJECTDIR}/txbuf.o.d" $(SILENT) -rsi ${MP_CC_DIR}../ -c ${MP_CC} $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_SIMULATOR=1  -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -MMD -MF "${OBJECTDIR}/txbuf.o.d" -o ${OBJECTDIR}/txbuf.o txbuf.c  
+	
+${OBJECTDIR}/packet.o: packet.c  nbproject/Makefile-${CND_CONF}.mk
+	@${MKDIR} "${OBJECTDIR}" 
+	@${RM} ${OBJECTDIR}/packet.o.d 
+	@${RM} ${OBJECTDIR}/packet.o 
+	@${FIXDEPS} "${OBJECTDIR}/packet.o.d" $(SILENT) -rsi ${MP_CC_DIR}../ -c ${MP_CC} $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_SIMULATOR=1  -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -MMD -MF "${OBJECTDIR}/packet.o.d" -o ${OBJECTDIR}/packet.o packet.c  
+	
 else
 ${OBJECTDIR}/mcp3304.o: mcp3304.c  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} "${OBJECTDIR}" 
@@ -179,6 +191,18 @@ ${OBJECTDIR}/crc16.o: crc16.c  nbproject/Makefile-${CND_CONF}.mk
 	@${RM} ${OBJECTDIR}/crc16.o.d 
 	@${RM} ${OBJECTDIR}/crc16.o 
 	@${FIXDEPS} "${OBJECTDIR}/crc16.o.d" $(SILENT) -rsi ${MP_CC_DIR}../ -c ${MP_CC} $(MP_EXTRA_CC_PRE)  -g -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -MMD -MF "${OBJECTDIR}/crc16.o.d" -o ${OBJECTDIR}/crc16.o crc16.c  
+	
+${OBJECTDIR}/txbuf.o: txbuf.c  nbproject/Makefile-${CND_CONF}.mk
+	@${MKDIR} "${OBJECTDIR}" 
+	@${RM} ${OBJECTDIR}/txbuf.o.d 
+	@${RM} ${OBJECTDIR}/txbuf.o 
+	@${FIXDEPS} "${OBJECTDIR}/txbuf.o.d" $(SILENT) -rsi ${MP_CC_DIR}../ -c ${MP_CC} $(MP_EXTRA_CC_PRE)  -g -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -MMD -MF "${OBJECTDIR}/txbuf.o.d" -o ${OBJECTDIR}/txbuf.o txbuf.c  
+	
+${OBJECTDIR}/packet.o: packet.c  nbproject/Makefile-${CND_CONF}.mk
+	@${MKDIR} "${OBJECTDIR}" 
+	@${RM} ${OBJECTDIR}/packet.o.d 
+	@${RM} ${OBJECTDIR}/packet.o 
+	@${FIXDEPS} "${OBJECTDIR}/packet.o.d" $(SILENT) -rsi ${MP_CC_DIR}../ -c ${MP_CC} $(MP_EXTRA_CC_PRE)  -g -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -MMD -MF "${OBJECTDIR}/packet.o.d" -o ${OBJECTDIR}/packet.o packet.c  
 	
 endif
 

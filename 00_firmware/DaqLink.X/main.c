@@ -12,6 +12,7 @@
 #include "mcp3304.h"
 #include "uart1.h"
 #include "crc16.h"
+#include "packet.h"
 
 #define SYS_FREQ        80000000UL
 #define CT_TICKS_PER_MS (SYS_FREQ / 2 / 1000)   /* Core Timer = SYSCLK/2 */
@@ -86,6 +87,11 @@ int main(void)
     uart1_puts("CRC packet = ");
     uart1_put_uint(crc16_calc(crc_vec, sizeof(crc_vec)));
     uart1_puts("  (expect 58229)\r\n");
+    
+    static const uint8_t demo_payload[14] = {       /* 協定 4.1 範例 */
+        0x01, 0x00, 0x00, 0x08, 0x00, 0x04, 0xFF, 0x07,
+        0x01, 0x04, 0x00, 0x00, 0xFF, 0x0F
+    };
 
     while (1)
     {
@@ -93,19 +99,9 @@ int main(void)
         {
             last += 1000 * CT_TICKS_PER_MS;
             LD1 = !LD1;
-            uart1_puts("hello mcp3304 ");
-            uart1_puts("count: ");
-            uart1_put_uint(count++);
-            uart1_puts("  CH2=");
-            uart1_put_uint(mcp3304_read(2));
-            uart1_puts("  CH3=");
-            uart1_put_uint(mcp3304_read(3));
-            uart1_puts("\r\n");
+            packet_send(PKT_TYPE_DATA, demo_payload, sizeof(demo_payload));
         }
 
-        /* 工作 2:echo */
-        c = uart1_getc();
-        if (c >= 0)
-            uart1_putc((char)c);
+        packet_tx_pump();
     }
 }
