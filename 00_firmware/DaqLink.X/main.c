@@ -11,6 +11,7 @@
 #include "mcp4922.h"
 #include "mcp3304.h"
 #include "uart1.h"
+#include "crc16.h"
 
 #define SYS_FREQ        80000000UL
 #define CT_TICKS_PER_MS (SYS_FREQ / 2 / 1000)   /* Core Timer = SYSCLK/2 */
@@ -72,10 +73,23 @@ int main(void)
     
     uart1_puts("\r\nDaqLink UART1 ready\r\n");
     last = _CP0_GET_COUNT();
+    
+    static const uint8_t crc_vec[] = {          /* 協定第 8 節 DATA 範例的 LEN~payload */
+        0x0E, 0x01, 0x01, 0x00, 0x00, 0x08, 0x00, 0x04,
+        0xFF, 0x07, 0x01, 0x04, 0x00, 0x00, 0xFF, 0x0F
+    };
+    
+    uart1_puts("CRC check  = ");
+    uart1_put_uint(crc16_calc((const uint8_t *)"123456789", 9));
+    uart1_puts("  (expect 10673)\r\n");
+
+    uart1_puts("CRC packet = ");
+    uart1_put_uint(crc16_calc(crc_vec, sizeof(crc_vec)));
+    uart1_puts("  (expect 58229)\r\n");
 
     while (1)
     {
-         if ((_CP0_GET_COUNT() - last) >= 1000 * CT_TICKS_PER_MS)
+        if ((_CP0_GET_COUNT() - last) >= 1000 * CT_TICKS_PER_MS)
         {
             last += 1000 * CT_TICKS_PER_MS;
             LD1 = !LD1;
