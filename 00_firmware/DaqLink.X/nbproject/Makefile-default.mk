@@ -57,17 +57,17 @@ OBJECTDIR=build/${CND_CONF}/${IMAGE_TYPE}
 DISTDIR=dist/${CND_CONF}/${IMAGE_TYPE}
 
 # Source Files Quoted if spaced
-SOURCEFILES_QUOTED_IF_SPACED=mcp3304.c mcp4922.c main.c spi2.c
+SOURCEFILES_QUOTED_IF_SPACED=mcp3304.c mcp4922.c main.c spi2.c uart1.c
 
 # Object Files Quoted if spaced
-OBJECTFILES_QUOTED_IF_SPACED=${OBJECTDIR}/mcp3304.o ${OBJECTDIR}/mcp4922.o ${OBJECTDIR}/main.o ${OBJECTDIR}/spi2.o
-POSSIBLE_DEPFILES=${OBJECTDIR}/mcp3304.o.d ${OBJECTDIR}/mcp4922.o.d ${OBJECTDIR}/main.o.d ${OBJECTDIR}/spi2.o.d
+OBJECTFILES_QUOTED_IF_SPACED=${OBJECTDIR}/mcp3304.o ${OBJECTDIR}/mcp4922.o ${OBJECTDIR}/main.o ${OBJECTDIR}/spi2.o ${OBJECTDIR}/uart1.o
+POSSIBLE_DEPFILES=${OBJECTDIR}/mcp3304.o.d ${OBJECTDIR}/mcp4922.o.d ${OBJECTDIR}/main.o.d ${OBJECTDIR}/spi2.o.d ${OBJECTDIR}/uart1.o.d
 
 # Object Files
-OBJECTFILES=${OBJECTDIR}/mcp3304.o ${OBJECTDIR}/mcp4922.o ${OBJECTDIR}/main.o ${OBJECTDIR}/spi2.o
+OBJECTFILES=${OBJECTDIR}/mcp3304.o ${OBJECTDIR}/mcp4922.o ${OBJECTDIR}/main.o ${OBJECTDIR}/spi2.o ${OBJECTDIR}/uart1.o
 
 # Source Files
-SOURCEFILES=mcp3304.c mcp4922.c main.c spi2.c
+SOURCEFILES=mcp3304.c mcp4922.c main.c spi2.c uart1.c
 
 
 
@@ -131,6 +131,12 @@ ${OBJECTDIR}/spi2.o: spi2.c  nbproject/Makefile-${CND_CONF}.mk
 	@${RM} ${OBJECTDIR}/spi2.o 
 	@${FIXDEPS} "${OBJECTDIR}/spi2.o.d" $(SILENT) -rsi ${MP_CC_DIR}../ -c ${MP_CC} $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_SIMULATOR=1  -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -MMD -MF "${OBJECTDIR}/spi2.o.d" -o ${OBJECTDIR}/spi2.o spi2.c  
 	
+${OBJECTDIR}/uart1.o: uart1.c  nbproject/Makefile-${CND_CONF}.mk
+	@${MKDIR} "${OBJECTDIR}" 
+	@${RM} ${OBJECTDIR}/uart1.o.d 
+	@${RM} ${OBJECTDIR}/uart1.o 
+	@${FIXDEPS} "${OBJECTDIR}/uart1.o.d" $(SILENT) -rsi ${MP_CC_DIR}../ -c ${MP_CC} $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_SIMULATOR=1  -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -MMD -MF "${OBJECTDIR}/uart1.o.d" -o ${OBJECTDIR}/uart1.o uart1.c  
+	
 else
 ${OBJECTDIR}/mcp3304.o: mcp3304.c  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} "${OBJECTDIR}" 
@@ -155,6 +161,12 @@ ${OBJECTDIR}/spi2.o: spi2.c  nbproject/Makefile-${CND_CONF}.mk
 	@${RM} ${OBJECTDIR}/spi2.o.d 
 	@${RM} ${OBJECTDIR}/spi2.o 
 	@${FIXDEPS} "${OBJECTDIR}/spi2.o.d" $(SILENT) -rsi ${MP_CC_DIR}../ -c ${MP_CC} $(MP_EXTRA_CC_PRE)  -g -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -MMD -MF "${OBJECTDIR}/spi2.o.d" -o ${OBJECTDIR}/spi2.o spi2.c  
+	
+${OBJECTDIR}/uart1.o: uart1.c  nbproject/Makefile-${CND_CONF}.mk
+	@${MKDIR} "${OBJECTDIR}" 
+	@${RM} ${OBJECTDIR}/uart1.o.d 
+	@${RM} ${OBJECTDIR}/uart1.o 
+	@${FIXDEPS} "${OBJECTDIR}/uart1.o.d" $(SILENT) -rsi ${MP_CC_DIR}../ -c ${MP_CC} $(MP_EXTRA_CC_PRE)  -g -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -MMD -MF "${OBJECTDIR}/uart1.o.d" -o ${OBJECTDIR}/uart1.o uart1.c  
 	
 endif
 
