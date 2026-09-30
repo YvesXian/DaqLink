@@ -13,10 +13,10 @@
 #include "uart1.h"
 #include "crc16.h"
 #include "packet.h"
+#include "daq.h"
 
 #define SYS_FREQ        80000000UL
 #define CT_TICKS_PER_MS (SYS_FREQ / 2 / 1000)   /* Core Timer = SYSCLK/2 */
-#define PHASE_MS        8000            /* 每個階段 8 秒,電表才來得及穩定 */
 #define LD1             LATEbits.LATE3
 #define LD2             LATAbits.LATA10
 
@@ -24,14 +24,6 @@ static void delay_ms(uint32_t ms)
 {
     uint32_t start = _CP0_GET_COUNT();
     while ((_CP0_GET_COUNT() - start) < ms * CT_TICKS_PER_MS);
-}
-
-/* 在指定時間內一直送同一個 byte */
-static void spi_burst(uint8_t tx, uint32_t ms)
-{
-    uint32_t start = _CP0_GET_COUNT();
-    while ((_CP0_GET_COUNT() - start) < ms * CT_TICKS_PER_MS)
-    spi2_xfer(tx);
 }
 
 static void led_init(void)
@@ -57,9 +49,11 @@ static void led_initial_blinking(uint32_t ms)
 
 int main(void)
 {
+    static const uint8_t crc_vec[] = {          /* 協定第 8 節 DATA 範例的 LEN~payload */
+        0x0E, 0x01, 0x01, 0x00, 0x00, 0x08, 0x00, 0x04,
+        0xFF, 0x07, 0x01, 0x04, 0x00, 0x00, 0xFF, 0x0F
+    };
     uint32_t last;
-    uint32_t count = 0;
-    int c;
     
     mcp4922_init();     /* 先把兩顆的 CS 拉高 */
     mcp3304_init();
@@ -69,17 +63,8 @@ int main(void)
     
     led_initial_blinking(200);
     
-    mcp4922_write(MCP4922_CH_A, 1024);
-    mcp4922_write(MCP4922_CH_B, 3072);
-    
     uart1_puts("\r\nDaqLink UART1 ready\r\n");
-    last = _CP0_GET_COUNT();
-    
-    static const uint8_t crc_vec[] = {          /* 協定第 8 節 DATA 範例的 LEN~payload */
-        0x0E, 0x01, 0x01, 0x00, 0x00, 0x08, 0x00, 0x04,
-        0xFF, 0x07, 0x01, 0x04, 0x00, 0x00, 0xFF, 0x0F
-    };
-    
+
     uart1_puts("CRC check  = ");
     uart1_put_uint(crc16_calc((const uint8_t *)"123456789", 9));
     uart1_puts("  (expect 10673)\r\n");
@@ -88,18 +73,20 @@ int main(void)
     uart1_put_uint(crc16_calc(crc_vec, sizeof(crc_vec)));
     uart1_puts("  (expect 58229)\r\n");
     
-    static const uint8_t demo_payload[14] = {       /* 協定 4.1 範例 */
-        0x01, 0x00, 0x00, 0x08, 0x00, 0x04, 0xFF, 0x07,
-        0x01, 0x04, 0x00, 0x00, 0xFF, 0x0F
-    };
-
+    /* ---- 開始採樣:之後主迴圈不可碰 SPI,輸出只能走 packet_send ---- */
+    daq_init();
+    INTCONSET = _INTCON_MVEC_MASK;      /* multi-vector 模式 */
+    asm volatile("ei");                 /* 開啟全域中斷 */
+    daq_start();
+    
+    last = _CP0_GET_COUNT();
+    
     while (1)
     {
         if ((_CP0_GET_COUNT() - last) >= 1000 * CT_TICKS_PER_MS)
         {
             last += 1000 * CT_TICKS_PER_MS;
             LD1 = !LD1;
-            packet_send(PKT_TYPE_DATA, demo_payload, sizeof(demo_payload));
         }
 
         packet_tx_pump();

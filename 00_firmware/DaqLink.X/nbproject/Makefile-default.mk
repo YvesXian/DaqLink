@@ -57,17 +57,17 @@ OBJECTDIR=build/${CND_CONF}/${IMAGE_TYPE}
 DISTDIR=dist/${CND_CONF}/${IMAGE_TYPE}
 
 # Source Files Quoted if spaced
-SOURCEFILES_QUOTED_IF_SPACED=mcp3304.c mcp4922.c main.c spi2.c uart1.c crc16.c txbuf.c packet.c
+SOURCEFILES_QUOTED_IF_SPACED=mcp3304.c mcp4922.c main.c spi2.c uart1.c crc16.c txbuf.c packet.c daq.c
 
 # Object Files Quoted if spaced
-OBJECTFILES_QUOTED_IF_SPACED=${OBJECTDIR}/mcp3304.o ${OBJECTDIR}/mcp4922.o ${OBJECTDIR}/main.o ${OBJECTDIR}/spi2.o ${OBJECTDIR}/uart1.o ${OBJECTDIR}/crc16.o ${OBJECTDIR}/txbuf.o ${OBJECTDIR}/packet.o
-POSSIBLE_DEPFILES=${OBJECTDIR}/mcp3304.o.d ${OBJECTDIR}/mcp4922.o.d ${OBJECTDIR}/main.o.d ${OBJECTDIR}/spi2.o.d ${OBJECTDIR}/uart1.o.d ${OBJECTDIR}/crc16.o.d ${OBJECTDIR}/txbuf.o.d ${OBJECTDIR}/packet.o.d
+OBJECTFILES_QUOTED_IF_SPACED=${OBJECTDIR}/mcp3304.o ${OBJECTDIR}/mcp4922.o ${OBJECTDIR}/main.o ${OBJECTDIR}/spi2.o ${OBJECTDIR}/uart1.o ${OBJECTDIR}/crc16.o ${OBJECTDIR}/txbuf.o ${OBJECTDIR}/packet.o ${OBJECTDIR}/daq.o
+POSSIBLE_DEPFILES=${OBJECTDIR}/mcp3304.o.d ${OBJECTDIR}/mcp4922.o.d ${OBJECTDIR}/main.o.d ${OBJECTDIR}/spi2.o.d ${OBJECTDIR}/uart1.o.d ${OBJECTDIR}/crc16.o.d ${OBJECTDIR}/txbuf.o.d ${OBJECTDIR}/packet.o.d ${OBJECTDIR}/daq.o.d
 
 # Object Files
-OBJECTFILES=${OBJECTDIR}/mcp3304.o ${OBJECTDIR}/mcp4922.o ${OBJECTDIR}/main.o ${OBJECTDIR}/spi2.o ${OBJECTDIR}/uart1.o ${OBJECTDIR}/crc16.o ${OBJECTDIR}/txbuf.o ${OBJECTDIR}/packet.o
+OBJECTFILES=${OBJECTDIR}/mcp3304.o ${OBJECTDIR}/mcp4922.o ${OBJECTDIR}/main.o ${OBJECTDIR}/spi2.o ${OBJECTDIR}/uart1.o ${OBJECTDIR}/crc16.o ${OBJECTDIR}/txbuf.o ${OBJECTDIR}/packet.o ${OBJECTDIR}/daq.o
 
 # Source Files
-SOURCEFILES=mcp3304.c mcp4922.c main.c spi2.c uart1.c crc16.c txbuf.c packet.c
+SOURCEFILES=mcp3304.c mcp4922.c main.c spi2.c uart1.c crc16.c txbuf.c packet.c daq.c
 
 
 
@@ -155,6 +155,12 @@ ${OBJECTDIR}/packet.o: packet.c  nbproject/Makefile-${CND_CONF}.mk
 	@${RM} ${OBJECTDIR}/packet.o 
 	@${FIXDEPS} "${OBJECTDIR}/packet.o.d" $(SILENT) -rsi ${MP_CC_DIR}../ -c ${MP_CC} $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_SIMULATOR=1  -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -MMD -MF "${OBJECTDIR}/packet.o.d" -o ${OBJECTDIR}/packet.o packet.c  
 	
+${OBJECTDIR}/daq.o: daq.c  nbproject/Makefile-${CND_CONF}.mk
+	@${MKDIR} "${OBJECTDIR}" 
+	@${RM} ${OBJECTDIR}/daq.o.d 
+	@${RM} ${OBJECTDIR}/daq.o 
+	@${FIXDEPS} "${OBJECTDIR}/daq.o.d" $(SILENT) -rsi ${MP_CC_DIR}../ -c ${MP_CC} $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_SIMULATOR=1  -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -MMD -MF "${OBJECTDIR}/daq.o.d" -o ${OBJECTDIR}/daq.o daq.c  
+	
 else
 ${OBJECTDIR}/mcp3304.o: mcp3304.c  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} "${OBJECTDIR}" 
@@ -203,6 +209,12 @@ ${OBJECTDIR}/packet.o: packet.c  nbproject/Makefile-${CND_CONF}.mk
 	@${RM} ${OBJECTDIR}/packet.o.d 
 	@${RM} ${OBJECTDIR}/packet.o 
 	@${FIXDEPS} "${OBJECTDIR}/packet.o.d" $(SILENT) -rsi ${MP_CC_DIR}../ -c ${MP_CC} $(MP_EXTRA_CC_PRE)  -g -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -MMD -MF "${OBJECTDIR}/packet.o.d" -o ${OBJECTDIR}/packet.o packet.c  
+	
+${OBJECTDIR}/daq.o: daq.c  nbproject/Makefile-${CND_CONF}.mk
+	@${MKDIR} "${OBJECTDIR}" 
+	@${RM} ${OBJECTDIR}/daq.o.d 
+	@${RM} ${OBJECTDIR}/daq.o 
+	@${FIXDEPS} "${OBJECTDIR}/daq.o.d" $(SILENT) -rsi ${MP_CC_DIR}../ -c ${MP_CC} $(MP_EXTRA_CC_PRE)  -g -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -MMD -MF "${OBJECTDIR}/daq.o.d" -o ${OBJECTDIR}/daq.o daq.c  
 	
 endif
 
