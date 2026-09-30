@@ -12,6 +12,7 @@
       <itemPath>txbuf.h</itemPath>
       <itemPath>packet.h</itemPath>
       <itemPath>daq.h</itemPath>
+      <itemPath>cmd.h</itemPath>
     </logicalFolder>
     <logicalFolder name="LinkerScript"
                    displayName="Linker Files"
@@ -29,6 +30,7 @@
       <itemPath>txbuf.c</itemPath>
       <itemPath>packet.c</itemPath>
       <itemPath>daq.c</itemPath>
+      <itemPath>cmd.c</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"

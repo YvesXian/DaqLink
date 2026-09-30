@@ -19,6 +19,11 @@ extern "C" {
     void daq_init(void);
     void daq_start(void);
     void daq_stop(void);
+    void daq_set_rate(uint16_t hz);
+    uint16_t daq_get_rate(void);
+    int daq_is_running(void);
+    uint32_t daq_lock(void);
+    void daq_unlock(uint32_t saved);
 
 #ifdef	__cplusplus
 }

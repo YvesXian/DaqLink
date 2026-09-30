@@ -14,6 +14,7 @@
 #include "crc16.h"
 #include "packet.h"
 #include "daq.h"
+#include "cmd.h"
 
 #define SYS_FREQ        80000000UL
 #define CT_TICKS_PER_MS (SYS_FREQ / 2 / 1000)   /* Core Timer = SYSCLK/2 */
@@ -73,11 +74,10 @@ int main(void)
     uart1_put_uint(crc16_calc(crc_vec, sizeof(crc_vec)));
     uart1_puts("  (expect 58229)\r\n");
     
-    /* ---- 開始採樣:之後主迴圈不可碰 SPI,輸出只能走 packet_send ---- */
+    /* ---- 啟用中斷，等待 PC 下 START:之後主迴圈不可碰 SPI,輸出只能走 packet_send ---- */
     daq_init();
     INTCONSET = _INTCON_MVEC_MASK;      /* multi-vector 模式 */
     asm volatile("ei");                 /* 開啟全域中斷 */
-    daq_start();
     
     last = _CP0_GET_COUNT();
     
@@ -89,6 +89,7 @@ int main(void)
             LD1 = !LD1;
         }
 
+        cmd_poll();
         packet_tx_pump();
     }
 }

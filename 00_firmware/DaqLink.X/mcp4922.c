@@ -1,5 +1,6 @@
 #include "p32xxxx.h"
 #include "mcp4922.h"
+#include "spi2.h"
 
 /* DAC CS = RE6 (active low) */
 #define DAC_CS_MASK     (1u << 6)
@@ -20,7 +21,7 @@ void mcp4922_write(uint8_t ch, uint16_t code)
 {
     uint16_t cmd;
     
-    cmd = (ch == MCP4922_CMD_B) ? MCP4922_CMD_B : MCP4922_CMD_A;
+    cmd = (ch == MCP4922_CH_B) ? MCP4922_CMD_B : MCP4922_CMD_A;
     cmd |= (code & 0x0FFF);
     
     DAC_CS_LOW();
