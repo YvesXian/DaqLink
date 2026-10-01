@@ -4,3 +4,7 @@ CLAUDE.md
 __pycache__/
 00_firmware/DaqLink.X/nbproject/private/
 docs/debug-notes.md
+01_pc/**/bin/
+01_pc/**/obj/
+.vs/
+*.user
