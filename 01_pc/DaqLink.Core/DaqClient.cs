@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using DaqLink.Core.Models;
 using DaqLink.Core.Protocol;
@@ -23,11 +24,16 @@ namespace DaqLink.Core
     public sealed class DaqClient : IDisposable
     {
         private readonly ISerialLink _link;
+        private readonly PacketParser _parser = new PacketParser();
+        private int _prevSeq = -1;              /* -1 = 沒有上一筆(剛建立或剛 START) */
+        private long _sampleCount;
+        private long _lostCount;
 
         public DaqClient(ISerialLink link)
         {
-            _link = link ?? throw new ArgumentNullException(nameof(link));
-            // TODO(使用者實作):訂閱 _link.BytesReceived / _link.Faulted
+            this._link = link ?? throw new ArgumentNullException(nameof(link));
+            this._link.BytesReceived += OnBytesReceived;
+            this._link.Faulted += OnFaulted;
         }
 
         public TimeSpan CommandTimeout { get; set; } = TimeSpan.FromMilliseconds(200);
@@ -41,20 +47,13 @@ namespace DaqLink.Core
         public event EventHandler<Exception> ConnectionLost;
 
         /// <summary>收到的 DATA 封包總數</summary>
-        public long SampleCount { get; private set; }
+        public long SampleCount => Interlocked.Read(ref _sampleCount);
 
         /// <summary>依 seq 推算遺失的 DATA 封包數</summary>
-        public long LostCount { get; private set; }
+        public long LostCount => Interlocked.Read(ref _lostCount);
 
         /// <summary>PC 端解析器的 CRC 錯誤數</summary>
-        public int CrcErrors
-        {
-            get
-            {
-                // TODO(使用者實作)
-                throw new NotImplementedException();
-            }
-        }
+        public int CrcErrors => _parser.CrcErrors;
 
         public Task<CommandResult> StartAsync()
         {
@@ -89,7 +88,46 @@ namespace DaqLink.Core
 
         public void Dispose()
         {
-            // TODO(使用者實作):取消訂閱 _link 的事件
+            _link.BytesReceived -= OnBytesReceived;
+            _link.Faulted -= OnFaulted;
+        }
+
+        private void OnBytesReceived(object sender, byte[] data)
+        {
+            foreach (var p in this._parser.Feed(data))
+            {
+                if (p.Type == PacketType.Data)
+                    HandleData(p);
+                else
+                    HandleResponse(p);
+            }
+        }
+
+        private void HandleData(Packet p)
+        {
+            if (p.Payload.Length != DataSample.PayloadLength)
+                return;
+
+            var sample = DataSample.FromPayload(p.Payload);
+            if (_prevSeq >= 0)
+            {
+                var diff = (ushort)(sample.Seq - _prevSeq);
+                if(diff > 1)
+                    Interlocked.Add(ref _lostCount, diff - 1);
+            }
+            _prevSeq = sample.Seq;
+            Interlocked.Increment(ref _sampleCount);
+            SampleReceived?.Invoke(this, sample);
+        }
+
+        private void HandleResponse(Packet p)
+        {
+            
+        }
+
+        private void OnFaulted(object sender, Exception ex)
+        {
+            ConnectionLost?.Invoke(this, ex);
         }
     }
 }
