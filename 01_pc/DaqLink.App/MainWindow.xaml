@@ -1,0 +1,152 @@
+<Window x:Class="DaqLink.App.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:DaqLink.App.ViewModels"
+        Title="DaqLink" Height="680" Width="1000" MinHeight="520" MinWidth="820"
+        Closing="OnClosing">
+
+    <Window.Resources>
+        <!-- 兩個 DAC 通道共用同一份波形設定介面 -->
+        <DataTemplate DataType="{x:Type vm:WaveSettingsViewModel}">
+            <GroupBox Header="{Binding Title}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="80" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0" Text="Type" VerticalAlignment="Center" />
+                    <ComboBox Grid.Row="0" Grid.Column="1" ItemsSource="{Binding Types}" SelectedItem="{Binding Type}" />
+
+                    <TextBlock Grid.Row="1" Text="Freq (Hz)" VerticalAlignment="Center" />
+                    <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding FreqHz}" IsEnabled="{Binding IsPeriodic}" />
+
+                    <TextBlock Grid.Row="2" Text="Amp (code)" VerticalAlignment="Center" />
+                    <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding Amp}" IsEnabled="{Binding IsPeriodic}" />
+
+                    <TextBlock Grid.Row="3" Text="Offset (code)" VerticalAlignment="Center" />
+                    <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding Offset}" />
+
+                    <Button Grid.Row="4" Grid.Column="1" Content="Apply" HorizontalAlignment="Left" Margin="0,6,0,0"
+                            Command="{Binding ApplyCommand}" />
+                </Grid>
+            </GroupBox>
+        </DataTemplate>
+    </Window.Resources>
+
+    <DockPanel>
+        <StatusBar DockPanel.Dock="Bottom">
+            <StatusBarItem Content="{Binding ConnectionText}" />
+            <Separator />
+            <StatusBarItem>
+                <TextBlock>
+                    <Run Text="Samples " /><Run Text="{Binding SampleCount, Mode=OneWay}" />
+                    <Run Text="  ·  Lost " /><Run Text="{Binding LostCount, Mode=OneWay}" />
+                    <Run Text="  ·  " /><Run Text="{Binding PacketsPerSecond, Mode=OneWay}" /><Run Text=" pkt/s" />
+                    <Run Text="  ·  PC CRC err " /><Run Text="{Binding CrcErrors, Mode=OneWay}" />
+                </TextBlock>
+            </StatusBarItem>
+            <Separator />
+            <StatusBarItem>
+                <TextBlock>
+                    <Run Text="MCU: " /><Run Text="{Binding McuStatus, Mode=OneWay}" />
+                </TextBlock>
+            </StatusBarItem>
+        </StatusBar>
+
+        <Grid Margin="8">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="160" />
+            </Grid.RowDefinitions>
+
+            <!-- 連線 -->
+            <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,8">
+                <TextBlock Text="Port" VerticalAlignment="Center" Margin="0,0,6,0" />
+                <ComboBox Width="110" Margin="0,0,6,0" ItemsSource="{Binding Ports}" SelectedItem="{Binding SelectedPort}"
+                          IsEnabled="{Binding CanSelectPort}" />
+                <Button Content="Refresh" Command="{Binding RefreshPortsCommand}" />
+                <Button Content="{Binding ConnectButtonText}" Command="{Binding ConnectCommand}" />
+            </StackPanel>
+
+            <Grid Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="290" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <!-- 左：控制 -->
+                <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto" Margin="0,0,8,0">
+                    <StackPanel>
+                        <GroupBox Header="Acquisition">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                    <Button Content="Start" Command="{Binding StartCommand}" />
+                                    <Button Content="Stop" Command="{Binding StopCommand}" />
+                                    <Button Content="Status" Command="{Binding GetStatusCommand}" />
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="Rate (Hz)" VerticalAlignment="Center" Width="80" />
+                                    <ComboBox Width="80" Margin="0,0,6,0" ItemsSource="{Binding Rates}" SelectedItem="{Binding SelectedRate}"
+                                              IsEnabled="{Binding CanChangeRate}" />
+                                    <Button Content="Apply" Command="{Binding ApplyRateCommand}" />
+                                </StackPanel>
+                                <TextBlock Text="Rate can only be changed while stopped." Foreground="Gray" FontSize="11" Margin="0,4,0,0" />
+                            </StackPanel>
+                        </GroupBox>
+                        <ContentControl Content="{Binding WaveA}" />
+                        <ContentControl Content="{Binding WaveB}" />
+                    </StackPanel>
+                </ScrollViewer>
+
+                <!-- 右：即時數值 + 圖表 -->
+                <Grid Grid.Column="1">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <GroupBox Grid.Row="0" Header="Live values (ideal: ADC = reference, ratiometric)">
+                        <DataGrid ItemsSource="{Binding Channels}" AutoGenerateColumns="False" IsReadOnly="True"
+                                  HeadersVisibility="Column" CanUserSortColumns="False" GridLinesVisibility="Horizontal"
+                                  FontFamily="Consolas" FontSize="13">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Channel" Binding="{Binding Name}" Width="70" />
+                                <DataGridTextColumn Header="Source" Binding="{Binding Source}" Width="*" />
+                                <DataGridTextColumn Header="Reference" Binding="{Binding Reference}" Width="90" />
+                                <DataGridTextColumn Header="ADC" Binding="{Binding Adc}" Width="90" />
+                                <DataGridTextColumn Header="Error (LSB)" Binding="{Binding Error, StringFormat={}{0:+0;-0;0}}" Width="90" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </GroupBox>
+
+                    <GroupBox Grid.Row="1" Header="Chart">
+                        <Border BorderBrush="LightGray" BorderThickness="1" Background="#FAFAFA">
+                            <TextBlock Text="Real-time chart (Day 8-9)" Foreground="Gray"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                    </GroupBox>
+                </Grid>
+            </Grid>
+
+            <!-- Log -->
+            <GroupBox Grid.Row="2" Margin="0">
+                <GroupBox.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Log" VerticalAlignment="Center" Margin="0,0,8,0" />
+                        <Button Content="Clear" Command="{Binding ClearLogCommand}" MinWidth="0" Padding="6,0" />
+                    </StackPanel>
+                </GroupBox.Header>
+                <ListBox ItemsSource="{Binding Log}" FontFamily="Consolas" FontSize="12" BorderThickness="0" />
+            </GroupBox>
+        </Grid>
+    </DockPanel>
+</Window>

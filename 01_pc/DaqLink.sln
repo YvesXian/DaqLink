@@ -1,0 +1,62 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30114.105
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DaqLink.App", "DaqLink.App\DaqLink.App.csproj", "{286DCC5C-BD8C-4295-B4F3-707FCF5FF2E3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DaqLink.Core", "DaqLink.Core\DaqLink.Core.csproj", "{2412C23E-0351-49DE-9FAF-B9DA0F900AE3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DaqLink.Core.Tests", "DaqLink.Core.Tests\DaqLink.Core.Tests.csproj", "{B8DF0833-72DB-4C81-83E1-78279C914709}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2412C23E-0351-49DE-9FAF-B9DA0F900AE3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2412C23E-0351-49DE-9FAF-B9DA0F900AE3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2412C23E-0351-49DE-9FAF-B9DA0F900AE3}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{2412C23E-0351-49DE-9FAF-B9DA0F900AE3}.Debug|x64.Build.0 = Debug|Any CPU
+		{2412C23E-0351-49DE-9FAF-B9DA0F900AE3}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{2412C23E-0351-49DE-9FAF-B9DA0F900AE3}.Debug|x86.Build.0 = Debug|Any CPU
+		{2412C23E-0351-49DE-9FAF-B9DA0F900AE3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2412C23E-0351-49DE-9FAF-B9DA0F900AE3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2412C23E-0351-49DE-9FAF-B9DA0F900AE3}.Release|x64.ActiveCfg = Release|Any CPU
+		{2412C23E-0351-49DE-9FAF-B9DA0F900AE3}.Release|x64.Build.0 = Release|Any CPU
+		{2412C23E-0351-49DE-9FAF-B9DA0F900AE3}.Release|x86.ActiveCfg = Release|Any CPU
+		{2412C23E-0351-49DE-9FAF-B9DA0F900AE3}.Release|x86.Build.0 = Release|Any CPU
+		{B8DF0833-72DB-4C81-83E1-78279C914709}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B8DF0833-72DB-4C81-83E1-78279C914709}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B8DF0833-72DB-4C81-83E1-78279C914709}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{B8DF0833-72DB-4C81-83E1-78279C914709}.Debug|x64.Build.0 = Debug|Any CPU
+		{B8DF0833-72DB-4C81-83E1-78279C914709}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{B8DF0833-72DB-4C81-83E1-78279C914709}.Debug|x86.Build.0 = Debug|Any CPU
+		{B8DF0833-72DB-4C81-83E1-78279C914709}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B8DF0833-72DB-4C81-83E1-78279C914709}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B8DF0833-72DB-4C81-83E1-78279C914709}.Release|x64.ActiveCfg = Release|Any CPU
+		{B8DF0833-72DB-4C81-83E1-78279C914709}.Release|x64.Build.0 = Release|Any CPU
+		{B8DF0833-72DB-4C81-83E1-78279C914709}.Release|x86.ActiveCfg = Release|Any CPU
+		{B8DF0833-72DB-4C81-83E1-78279C914709}.Release|x86.Build.0 = Release|Any CPU
+		{286DCC5C-BD8C-4295-B4F3-707FCF5FF2E3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{286DCC5C-BD8C-4295-B4F3-707FCF5FF2E3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{286DCC5C-BD8C-4295-B4F3-707FCF5FF2E3}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{286DCC5C-BD8C-4295-B4F3-707FCF5FF2E3}.Debug|x64.Build.0 = Debug|Any CPU
+		{286DCC5C-BD8C-4295-B4F3-707FCF5FF2E3}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{286DCC5C-BD8C-4295-B4F3-707FCF5FF2E3}.Debug|x86.Build.0 = Debug|Any CPU
+		{286DCC5C-BD8C-4295-B4F3-707FCF5FF2E3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{286DCC5C-BD8C-4295-B4F3-707FCF5FF2E3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{286DCC5C-BD8C-4295-B4F3-707FCF5FF2E3}.Release|x64.ActiveCfg = Release|Any CPU
+		{286DCC5C-BD8C-4295-B4F3-707FCF5FF2E3}.Release|x64.Build.0 = Release|Any CPU
+		{286DCC5C-BD8C-4295-B4F3-707FCF5FF2E3}.Release|x86.ActiveCfg = Release|Any CPU
+		{286DCC5C-BD8C-4295-B4F3-707FCF5FF2E3}.Release|x86.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
