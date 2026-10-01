@@ -2,6 +2,7 @@
 #include "packet.h"
 #include "uart1.h"
 #include "daq.h"
+#include "wave.h"
 
 #define ERR_UNKNOWN_CMD          0x01
 #define ERR_BAD_LEN              0x02
@@ -47,6 +48,8 @@ static void send_status(void)
 static void dispatch(const packet_t *pkt)
 {
     uint16_t hz;
+    uint16_t freq, amp, offset;
+    uint32_t saved;
 
     switch (pkt->type)
     {
@@ -67,6 +70,7 @@ static void dispatch(const packet_t *pkt)
         if (daq_is_running()) { nak(pkt->type, ERR_BUSY);    break; }
         hz = (uint16_t)(pkt->payload[0] | (pkt->payload[1] << 8));
         if (hz < RATE_MIN || hz > RATE_MAX) { nak(pkt->type, ERR_OUT_OF_RANGE); break; }
+        if (!wave_rate_ok(hz)) { nak(pkt->type, ERR_OUT_OF_RANGE); break; }
         daq_set_rate(hz);
         ack(pkt->type);
         break;
@@ -75,8 +79,24 @@ static void dispatch(const packet_t *pkt)
         if (pkt->len != 0) { nak(pkt->type, ERR_BAD_LEN); break; }
         send_status();                  /* 協定 5.5:只回 STATUS,不另外回 ACK */
         break;
+        
+    case PKT_TYPE_SET_WAVE:
+        if (pkt->len != 8) { nak(pkt->type, ERR_BAD_LEN); break; }
+        freq   = get_u16_le(&pkt->payload[2]);
+        amp    = get_u16_le(&pkt->payload[4]);
+        offset = get_u16_le(&pkt->payload[6]);
+        if (!wave_params_ok(pkt->payload[0], pkt->payload[1], freq, amp, offset, daq_get_rate()))
+        {
+            nak(pkt->type, ERR_OUT_OF_RANGE);
+            break;
+        }
+        saved = daq_lock();
+        wave_set(pkt->payload[0], pkt->payload[1], freq, amp, offset, daq_get_rate());
+        daq_unlock(saved);
+        ack(pkt->type);
+        break;
 
-    default:                            /* 含 SET_WAVE,P-5 再實作 */
+    default:
         nak(pkt->type, ERR_UNKNOWN_CMD);
         break;
     }

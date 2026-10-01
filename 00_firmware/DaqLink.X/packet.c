@@ -120,3 +120,8 @@ void put_u16_le(uint8_t *p, uint16_t v)
     p[0] = (uint8_t)(v & 0xFF);
     p[1] = (uint8_t)(v >> 8);
 }
+
+uint16_t get_u16_le(const uint8_t *p)
+{
+    return (uint16_t)(p[0] | (p[1] << 8));
+}

@@ -40,6 +40,7 @@ uint16_t packet_tx_drop(void);
 int packet_rx_feed(uint8_t b, packet_t *pkt);           /* 收到完整且 CRC 正確的封包回傳 1 */
 uint16_t packet_rx_crc_err(void);
 void put_u16_le(uint8_t *p, uint16_t v);                /* 從 daq.c 搬過來，給 cmd.c 共用 */
+uint16_t get_u16_le(const uint8_t *p);
 
 #ifdef	__cplusplus
 }
