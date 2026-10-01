@@ -1,5 +1,5 @@
 CLAUDE.md
 00_firmware/DaqLink.X/build/
 00_firmware/DaqLink.X/dist/
-tools/
+__pycache__/
 00_firmware/DaqLink.X/nbproject/private/
