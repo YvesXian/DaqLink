@@ -55,35 +55,32 @@ namespace DaqLink.Core
         /// <summary>PC 端解析器的 CRC 錯誤數</summary>
         public int CrcErrors => _parser.CrcErrors;
 
-        public Task<CommandResult> StartAsync()
+        public async Task<CommandResult> StartAsync()
         {
-            // TODO(使用者實作)
-            throw new NotImplementedException();
+            return ToResult(await SendCommandAsync(PacketBuilder.Start(), PacketType.Start).ConfigureAwait(false));
         }
 
-        public Task<CommandResult> StopAsync()
+        public async Task<CommandResult> StopAsync()
         {
-            // TODO(使用者實作)
-            throw new NotImplementedException();
+            return ToResult(await SendCommandAsync(PacketBuilder.Stop(), PacketType.Stop).ConfigureAwait(false));
         }
 
-        public Task<CommandResult> SetRateAsync(ushort rateHz)
+        public async Task<CommandResult> SetRateAsync(ushort rateHz)
         {
-            // TODO(使用者實作)
-            throw new NotImplementedException();
+            return ToResult(await SendCommandAsync(PacketBuilder.SetRate(rateHz), PacketType.SetRate).ConfigureAwait(false));
         }
 
-        public Task<CommandResult> SetWaveAsync(WaveConfig wave)
+        public async Task<CommandResult> SetWaveAsync(WaveConfig wave)
         {
-            // TODO(使用者實作)
-            throw new NotImplementedException();
+            return ToResult(await SendCommandAsync(PacketBuilder.SetWave(wave), PacketType.SetWave).ConfigureAwait(false));
         }
 
         /// <summary>MCU 只回 STATUS、不回 ACK(protocol.md 5.5)</summary>
-        public Task<DeviceStatus> GetStatusAsync()
+        public async Task<DeviceStatus> GetStatusAsync()
         {
-            // TODO(使用者實作)
-            throw new NotImplementedException();
+            var p = await SendCommandAsync(PacketBuilder.GetStatus(), PacketType.GetStatus).ConfigureAwait(false);
+
+            return DeviceStatus.FromPayload(p.Payload);
         }
 
         public void Dispose()
@@ -122,12 +119,78 @@ namespace DaqLink.Core
 
         private void HandleResponse(Packet p)
         {
-            
+            var pending = _pending;
+            if (pending == null)
+                return;
+
+            bool match;
+            if (pending.Cmd == PacketType.GetStatus)
+                match = p.Type == PacketType.Status && p.Payload.Length == DeviceStatus.PayloadLength;
+            else if (p.Type == PacketType.Ack)
+                match = p.Payload.Length == 1 && p.Payload[0] == pending.Cmd;
+            else if (p.Type == PacketType.Nak)
+                match = p.Payload.Length == 2 && p.Payload[0] == pending.Cmd;
+            else
+                match = false;
+
+            if (!match)
+                return;
+
+            if (p.Type == PacketType.Ack && pending.Cmd == PacketType.Start)
+                _prevSeq = -1;
+
+            pending.Tcs.TrySetResult(p);
         }
 
         private void OnFaulted(object sender, Exception ex)
         {
             ConnectionLost?.Invoke(this, ex);
+        }
+
+        private readonly SemaphoreSlim _cmdLock = new SemaphoreSlim(1, 1);
+        private volatile Pending _pending;
+
+        private sealed class Pending
+        {
+            public byte Cmd { get; }
+
+            public Pending(byte cmd)
+            {
+                this.Cmd = cmd;
+            }
+
+            public TaskCompletionSource<Packet> Tcs { get; } =
+                new TaskCompletionSource<Packet>(TaskCreationOptions.RunContinuationsAsynchronously);
+        }
+
+        private async Task<Packet> SendCommandAsync(byte[] frame, byte cmd)
+        {
+            await _cmdLock.WaitAsync().ConfigureAwait(false);
+            try
+            {
+                var pending = new Pending(cmd);
+                _pending = pending;
+
+                for (int attempt = 0; attempt <= MaxRetries; attempt++)
+                {
+                    _link.Write(frame);
+                    var done = await Task.WhenAny(pending.Tcs.Task, Task.Delay(CommandTimeout)).ConfigureAwait(false);
+                    if (done == pending.Tcs.Task)
+                        return await pending.Tcs.Task.ConfigureAwait(false);
+                }
+
+                throw new TimeoutException($"No response to command 0x{cmd:X2} after {MaxRetries + 1} attempts");
+            }
+            finally
+            {
+                _pending = null;
+                _cmdLock.Release();
+            }
+        }
+
+        private static CommandResult ToResult(Packet p)
+        {
+            return p.Type == PacketType.Ack ? CommandResult.Ack : CommandResult.Nak((NakError)p.Payload[1]);
         }
     }
 }
