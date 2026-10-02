@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="clr-namespace:DaqLink.App.ViewModels"
         xmlns:oxy="http://oxyplot.org/wpf"
-        Title="DaqLink" Height="680" Width="1000" MinHeight="520" MinWidth="820"
+        Title="DaqLink" Height="760" Width="1100" MinHeight="600" MinWidth="980"
         Closing="OnClosing">
 
     <Window.Resources>
@@ -66,7 +66,7 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
-                <RowDefinition Height="160" />
+                <RowDefinition Height="200" />
             </Grid.RowDefinitions>
 
             <!-- 連線 -->
@@ -101,6 +101,17 @@
                                     <Button Content="Apply" Command="{Binding ApplyRateCommand}" />
                                 </StackPanel>
                                 <TextBlock Text="Rate can only be changed while stopped." Foreground="Gray" FontSize="11" Margin="0,4,0,0" />
+                            </StackPanel>
+                        </GroupBox>
+                        <GroupBox Header="Recording">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal">
+                                    <Button Content="{Binding RecordButtonText}" Command="{Binding RecordCommand}" MinWidth="110" />
+                                    <Button Content="Open folder" Command="{Binding OpenRecordFolderCommand}" />
+                                </StackPanel>
+                                <TextBlock Text="{Binding RecordStatus}" Margin="0,4,0,0" />
+                                <TextBlock Text="CSV goes to the Report folder next to the exe; stops automatically on STOP."
+                                           Foreground="Gray" FontSize="11" TextWrapping="Wrap" Margin="0,2,0,0" />
                             </StackPanel>
                         </GroupBox>
                         <ContentControl Content="{Binding WaveA}" />
@@ -142,16 +153,47 @@
                 </Grid>
             </Grid>
 
-            <!-- Log -->
-            <GroupBox Grid.Row="2" Margin="0">
-                <GroupBox.Header>
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="Log" VerticalAlignment="Center" Margin="0,0,8,0" />
-                        <Button Content="Clear" Command="{Binding ClearLogCommand}" MinWidth="0" Padding="6,0" />
-                    </StackPanel>
-                </GroupBox.Header>
-                <ListBox ItemsSource="{Binding Log}" FontFamily="Consolas" FontSize="12" BorderThickness="0" />
-            </GroupBox>
+            <Grid Grid.Row="2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <!-- 統計(從 START 起累計) -->
+                <GroupBox Grid.Column="0" Margin="0,0,8,0">
+                    <GroupBox.Header>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Statistics since START (mean of error = offset, std = noise; LSB)"
+                                       VerticalAlignment="Center" Margin="0,0,8,0" />
+                            <Button Content="Reset" Command="{Binding ResetStatsCommand}" MinWidth="0" Padding="6,0" />
+                        </StackPanel>
+                    </GroupBox.Header>
+                    <DataGrid ItemsSource="{Binding Stats}" AutoGenerateColumns="False" IsReadOnly="True"
+                              HeadersVisibility="Column" CanUserSortColumns="False" GridLinesVisibility="Horizontal"
+                              FontFamily="Consolas" FontSize="12">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Signal" Binding="{Binding Name}" Width="95" />
+                            <DataGridTextColumn Header="Meaning" Binding="{Binding Meaning}" Width="105" />
+                            <DataGridTextColumn Header="N" Binding="{Binding Count}" Width="65" />
+                            <DataGridTextColumn Header="Min" Binding="{Binding Min}" Width="50" />
+                            <DataGridTextColumn Header="Max" Binding="{Binding Max}" Width="50" />
+                            <DataGridTextColumn Header="Mean" Binding="{Binding Mean}" Width="70" />
+                            <DataGridTextColumn Header="Std" Binding="{Binding StdDev}" Width="50" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </GroupBox>
+
+                <!-- Log -->
+                <GroupBox Grid.Column="1" Margin="0">
+                    <GroupBox.Header>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Log" VerticalAlignment="Center" Margin="0,0,8,0" />
+                            <Button Content="Clear" Command="{Binding ClearLogCommand}" MinWidth="0" Padding="6,0" />
+                        </StackPanel>
+                    </GroupBox.Header>
+                    <ListBox ItemsSource="{Binding Log}" FontFamily="Consolas" FontSize="12" BorderThickness="0" />
+                </GroupBox>
+            </Grid>
         </Grid>
     </DockPanel>
 </Window>

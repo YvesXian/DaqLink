@@ -6,6 +6,8 @@
     <UseWPF>true</UseWPF>
     <RootNamespace>DaqLink.App</RootNamespace>
     <AssemblyName>DaqLink</AssemblyName>
+    <!-- exe 直接輸出到 bin\Debug\(不要 net472 子資料夾),CSV 存在 bin\Debug\Report\ -->
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
   </PropertyGroup>
 
   <ItemGroup>

@@ -1,3 +1,4 @@
+using DaqLink.Core.Analysis;
 using DaqLink.Core.Models;
 using OxyPlot;
 using OxyPlot.Axes;
@@ -30,9 +31,7 @@ namespace DaqLink.App.ViewModels
         private readonly LinearAxis _waveX;
         private readonly LinearAxis _errX;
 
-        private double _rate = 100;
-        private long _index;            /* 從 Reset 起累計的樣本序號(seq 是 16-bit,會繞回) */
-        private int _lastSeq = -1;
+        private readonly SeqTimeline _timeline = new SeqTimeline(100);
 
         public ChartViewModel()
         {
@@ -66,7 +65,7 @@ namespace DaqLink.App.ViewModels
             });
             AddSeries(ErrorModel, _errA, _errB);
 
-            Reset(_rate);
+            Reset(100);
         }
 
         public PlotModel WaveModel { get; }
@@ -76,9 +75,7 @@ namespace DaqLink.App.ViewModels
         /// <summary>清空圖表，時間軸從 0 重新開始(START 時呼叫)</summary>
         public void Reset(double rateHz)
         {
-            _rate = rateHz > 0 ? rateHz : 100;
-            _index = 0;
-            _lastSeq = -1;
+            _timeline.Reset(rateHz > 0 ? rateHz : 100);
             foreach (var s in AllSeries())
                 s.Points.Clear();
             SetWindow(0);
@@ -87,19 +84,13 @@ namespace DaqLink.App.ViewModels
 
         public void Add(DataSample s)
         {
-            if (_lastSeq >= 0)
+            if (_timeline.Advance(s.Seq) > 0)
             {
-                var diff = (ushort)(s.Seq - _lastSeq);
-                if (diff > 1)
-                {
-                    foreach (var series in AllSeries())
-                        series.Points.Add(DataPoint.Undefined);     // 遺失封包 → 斷線
-                }
-                _index += diff;
+                foreach (var series in AllSeries())
+                    series.Points.Add(DataPoint.Undefined);         // 遺失封包 → 斷線
             }
-            _lastSeq = s.Seq;
 
-            var t = _index / _rate;
+            var t = _timeline.Seconds;
             _dacA.Points.Add(new DataPoint(t, s.DacA));
             _adc0.Points.Add(new DataPoint(t, s.Adc0));
             _dacB.Points.Add(new DataPoint(t, s.DacB));
@@ -111,7 +102,7 @@ namespace DaqLink.App.ViewModels
         /// <summary>丟掉視窗外的點、捲動時間軸、重畫;每個 UI tick 呼叫一次</summary>
         public void Flush()
         {
-            var now = _index / _rate;
+            var now = _timeline.Seconds;
             var start = now - WindowSeconds;
             foreach (var s in AllSeries())
                 Trim(s, start);

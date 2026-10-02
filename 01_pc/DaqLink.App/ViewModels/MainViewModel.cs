@@ -9,6 +9,7 @@ using System.Windows.Threading;
 using DaqLink.App.Mvvm;
 using DaqLink.Core;
 using DaqLink.Core.Models;
+using DaqLink.Core.Recording;
 using DaqLink.Core.Transport;
 
 namespace DaqLink.App.ViewModels
@@ -31,8 +32,15 @@ namespace DaqLink.App.ViewModels
         private readonly ConcurrentQueue<DataSample> _queue = new ConcurrentQueue<DataSample>();
         private readonly Stopwatch _clock = Stopwatch.StartNew();
 
+        /// <summary>exe 所在資料夾下的 Report(開發時為 bin\Debug\Report)</summary>
+        private static readonly string RecordDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Report");
+
         private SerialLink _link;
         private DaqClient _client;
+        private CsvRecorder _recorder;          /* null = 沒在錄 */
+        private string _recordPath;
+        private bool _isRecording;
+        private string _recordStatus = "";
 
         private string _selectedPort;
         private bool _isConnected;
@@ -64,6 +72,14 @@ namespace DaqLink.App.ViewModels
             Channels.Add(new ChannelViewModel("CH2", "GND"));
             Channels.Add(new ChannelViewModel("CH3", "VREF"));
 
+            // 誤差列：平均 = offset、標準差 = 雜訊，可直接和 tools/dc_sweep.py 的結果對照
+            Stats.Add(new StatsRowViewModel("CH0 − DAC A", "loop error A", s => s.ErrorA));
+            Stats.Add(new StatsRowViewModel("CH1 − DAC B", "loop error B", s => s.ErrorB));
+            Stats.Add(new StatsRowViewModel("CH2", "GND (≈ 0)", s => s.Adc2));
+            Stats.Add(new StatsRowViewModel("CH3", "VREF (≈ 4095)", s => s.Adc3));
+            Stats.Add(new StatsRowViewModel("CH0", "waveform A", s => s.Adc0));
+            Stats.Add(new StatsRowViewModel("CH1", "waveform B", s => s.Adc1));
+
             RefreshPortsCommand = new RelayCommand(RefreshPorts, () => !IsConnected);
             ConnectCommand = new AsyncRelayCommand(ToggleConnectionAsync, () => IsConnected || !string.IsNullOrEmpty(SelectedPort));
             StartCommand = new AsyncRelayCommand(StartAsync, () => IsConnected && !IsRunning);
@@ -71,6 +87,9 @@ namespace DaqLink.App.ViewModels
             ApplyRateCommand = new AsyncRelayCommand(ApplyRateAsync, () => CanChangeRate);
             GetStatusCommand = new AsyncRelayCommand(GetStatusAsync, () => IsConnected);
             ClearLogCommand = new RelayCommand(() => Log.Clear());
+            RecordCommand = new RelayCommand(ToggleRecording, () => IsRecording || IsRunning);
+            OpenRecordFolderCommand = new RelayCommand(OpenRecordFolder);
+            ResetStatsCommand = new RelayCommand(ResetStats);
 
             RefreshPorts();
         }
@@ -131,6 +150,30 @@ namespace DaqLink.App.ViewModels
 
         public ChartViewModel Chart { get; } = new ChartViewModel();
 
+        /// <summary>從 START(或按 Reset)起的累計統計</summary>
+        public ObservableCollection<StatsRowViewModel> Stats { get; } = new ObservableCollection<StatsRowViewModel>();
+
+        public bool IsRecording
+        {
+            get => _isRecording;
+            private set
+            {
+                if (Set(ref _isRecording, value))
+                {
+                    OnPropertyChanged(nameof(RecordButtonText));
+                    CommandManager.InvalidateRequerySuggested();
+                }
+            }
+        }
+
+        public string RecordButtonText => IsRecording ? "Stop recording" : "Record CSV";
+
+        public string RecordStatus
+        {
+            get => _recordStatus;
+            private set => Set(ref _recordStatus, value);
+        }
+
         public long SampleCount
         {
             get => _sampleCount;
@@ -171,6 +214,9 @@ namespace DaqLink.App.ViewModels
         public ICommand ApplyRateCommand { get; }
         public ICommand GetStatusCommand { get; }
         public ICommand ClearLogCommand { get; }
+        public ICommand RecordCommand { get; }
+        public ICommand OpenRecordFolderCommand { get; }
+        public ICommand ResetStatsCommand { get; }
 
         // ------------------------------------------------------------------
         // 連線
@@ -239,6 +285,7 @@ namespace DaqLink.App.ViewModels
             if (_link == null)
                 return;
 
+            StopRecording();
             _timer.Stop();
             _client.SampleReceived -= OnSampleReceived;
             _client.ConnectionLost -= OnConnectionLost;
@@ -274,7 +321,11 @@ namespace DaqLink.App.ViewModels
 
         private Task StopAsync()
         {
-            return RunAsync("STOP", () => _client.StopAsync(), () => IsRunning = false);
+            return RunAsync("STOP", () => _client.StopAsync(), () =>
+            {
+                StopRecording();            // 一個 CSV 檔 = 一段連續採樣
+                IsRunning = false;
+            });
         }
 
         private Task ApplyRateAsync()
@@ -342,18 +393,10 @@ namespace DaqLink.App.ViewModels
                 return;
 
             var now = _clock.Elapsed;
-            DataSample last = null;
-            int n = 0;
-            while (_queue.TryDequeue(out var s))
-            {
-                Chart.Add(s);
-                last = s;
-                n++;
-            }
+            int n = DrainQueue(out var last);
 
             if (last != null)
             {
-                Chart.Flush();
                 Channels[0].Update(last.DacA, last.Adc0);
                 Channels[1].Update(last.DacB, last.Adc1);
                 Channels[2].Update(0, last.Adc2);
@@ -373,6 +416,8 @@ namespace DaqLink.App.ViewModels
             SampleCount = _client.SampleCount;
             LostCount = _client.LostCount;
             CrcErrors = _client.CrcErrors;
+            if (_recorder != null)
+                RecordStatus = $"recording: {_recorder.Rows} rows";
 
             // 採樣中卻超過 1 秒沒有資料：線還在但 MCU 可能重開機或卡住
             if (IsRunning && !_noDataWarned && now - _lastSampleAt > NoDataTimeout)
@@ -392,6 +437,119 @@ namespace DaqLink.App.ViewModels
             foreach (var ch in Channels)
                 ch.Clear();
             Chart.Reset(_mcuRate);
+            ResetStats();
+        }
+
+        /// <summary>把 queue 取完:畫圖、統計、寫 CSV。回傳筆數與最後一筆。</summary>
+        private int DrainQueue(out DataSample last)
+        {
+            last = null;
+            int n = 0;
+            while (_queue.TryDequeue(out var s))
+            {
+                Chart.Add(s);
+                foreach (var row in Stats)
+                    row.Add(s);
+                WriteRecord(s);
+                last = s;
+                n++;
+            }
+
+            if (n > 0)
+            {
+                Chart.Flush();
+                foreach (var row in Stats)
+                    row.Refresh();
+            }
+            return n;
+        }
+
+        private void ResetStats()
+        {
+            foreach (var row in Stats)
+                row.Reset();
+        }
+
+        // ------------------------------------------------------------------
+        // CSV 記錄
+        // 在 UI 執行緒寫入(每 50 ms 約 10 列,StreamWriter 有緩衝),不另開執行緒。
+        // ------------------------------------------------------------------
+        private void ToggleRecording()
+        {
+            if (IsRecording)
+                StopRecording();
+            else
+                StartRecording();
+        }
+
+        private void StartRecording()
+        {
+            var path = Path.Combine(RecordDir, $"daqlink_{DateTime.Now:yyyyMMdd_HHmmss}_{_mcuRate}Hz.csv");
+            try
+            {
+                _recorder = CsvRecorder.Create(path, _mcuRate);
+            }
+            catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException)
+            {
+                Write($"record: cannot create {path}: {ex.Message}");
+                return;
+            }
+            _recordPath = path;
+            RecordStatus = "recording: 0 rows";
+            IsRecording = true;
+            Write($"recording → {path}");
+        }
+
+        /// <summary>先把 queue 裡剩下的樣本寫進去再關檔</summary>
+        private void StopRecording()
+        {
+            if (_recorder == null)
+                return;
+            DrainQueue(out _);
+            CloseRecorder(null);
+        }
+
+        private void WriteRecord(DataSample s)
+        {
+            if (_recorder == null)
+                return;
+            try
+            {
+                _recorder.Write(s);
+            }
+            catch (IOException ex)
+            {
+                CloseRecorder(ex.Message);      // 例如磁碟滿了：停止記錄，採樣繼續
+            }
+        }
+
+        private void CloseRecorder(string error)
+        {
+            var rec = _recorder;
+            if (rec == null)
+                return;
+            _recorder = null;               // 先清掉，避免 Dispose 失敗時重入
+
+            try
+            {
+                rec.Dispose();
+            }
+            catch (IOException ex)
+            {
+                error = error ?? ex.Message;
+            }
+
+            IsRecording = false;
+            RecordStatus = error == null ? $"saved {rec.Rows} rows" : "recording failed";
+            Write(error == null
+                ? $"recording saved: {rec.Rows} rows, {rec.Lost} lost → {_recordPath}"
+                : $"recording stopped: {error} ({_recordPath})");
+        }
+
+        private void OpenRecordFolder()
+        {
+            Directory.CreateDirectory(RecordDir);
+            Process.Start("explorer.exe", RecordDir);
         }
 
         // ------------------------------------------------------------------
