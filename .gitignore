@@ -8,3 +8,4 @@ docs/debug-notes.md
 01_pc/**/obj/
 .vs/
 *.user
+99_Demo/
