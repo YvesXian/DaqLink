@@ -2,6 +2,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="clr-namespace:DaqLink.App.ViewModels"
+        xmlns:oxy="http://oxyplot.org/wpf"
         Title="DaqLink" Height="680" Width="1000" MinHeight="520" MinWidth="820"
         Closing="OnClosing">
 
@@ -128,11 +129,15 @@
                         </DataGrid>
                     </GroupBox>
 
-                    <GroupBox Grid.Row="1" Header="Chart">
-                        <Border BorderBrush="LightGray" BorderThickness="1" Background="#FAFAFA">
-                            <TextBlock Text="Real-time chart (Day 8-9)" Foreground="Gray"
-                                       HorizontalAlignment="Center" VerticalAlignment="Center" />
-                        </Border>
+                    <GroupBox Grid.Row="1" Header="Chart (dashed = DAC code, solid = ADC reading; last 5 s)">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="2*" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <oxy:PlotView Grid.Row="0" Model="{Binding Chart.WaveModel}" />
+                            <oxy:PlotView Grid.Row="1" Model="{Binding Chart.ErrorModel}" />
+                        </Grid>
                     </GroupBox>
                 </Grid>
             </Grid>

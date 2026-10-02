@@ -38,6 +38,7 @@ namespace DaqLink.App.ViewModels
         private bool _isConnected;
         private bool _isRunning;
         private int _selectedRate = 100;
+        private int _mcuRate = 100;             /* MCU 實際的取樣率(STATUS / SET_RATE ACK),畫圖的時間軸用 */
         private long _sampleCount;
         private long _lostCount;
         private int _crcErrors;
@@ -127,6 +128,8 @@ namespace DaqLink.App.ViewModels
         public WaveSettingsViewModel WaveB { get; }
 
         public ObservableCollection<ChannelViewModel> Channels { get; } = new ObservableCollection<ChannelViewModel>();
+
+        public ChartViewModel Chart { get; } = new ChartViewModel();
 
         public long SampleCount
         {
@@ -277,7 +280,7 @@ namespace DaqLink.App.ViewModels
         private Task ApplyRateAsync()
         {
             var rate = SelectedRate;
-            return RunAsync($"SET_RATE {rate} Hz", () => _client.SetRateAsync((ushort)rate), null);
+            return RunAsync($"SET_RATE {rate} Hz", () => _client.SetRateAsync((ushort)rate), () => _mcuRate = rate);
         }
 
         private Task ApplyWaveAsync(WaveSettingsViewModel wave)
@@ -297,6 +300,7 @@ namespace DaqLink.App.ViewModels
                 var st = await _client.GetStatusAsync();
                 IsRunning = st.Running;
                 SelectedRate = st.RateHz;
+                _mcuRate = st.RateHz;
                 McuStatus = $"rate {st.RateHz} Hz · rx_crc_err {st.RxCrcErr} · tx_drop {st.TxDrop}";
                 Write($"STATUS {st}");
                 return true;
@@ -342,12 +346,14 @@ namespace DaqLink.App.ViewModels
             int n = 0;
             while (_queue.TryDequeue(out var s))
             {
+                Chart.Add(s);
                 last = s;
                 n++;
             }
 
             if (last != null)
             {
+                Chart.Flush();
                 Channels[0].Update(last.DacA, last.Adc0);
                 Channels[1].Update(last.DacB, last.Adc1);
                 Channels[2].Update(0, last.Adc2);
@@ -385,6 +391,7 @@ namespace DaqLink.App.ViewModels
             _rateWindowCount = 0;
             foreach (var ch in Channels)
                 ch.Clear();
+            Chart.Reset(_mcuRate);
         }
 
         // ------------------------------------------------------------------
